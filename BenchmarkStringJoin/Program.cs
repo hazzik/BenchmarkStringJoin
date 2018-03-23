@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
+using System.Linq;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 
 public class StringJoinBenchmark
 {
-    private const int N = 10000;
+    private const int N = 1000;
     private readonly byte[] data;
 
 
@@ -28,6 +28,12 @@ public class StringJoinBenchmark
 
     [Benchmark]
     public string MyStringBuilderJoin() => StringBuilderExtensions.AppendJoin(new StringBuilder().Append("["), ",", data).Append("]").ToString();
+
+    [Benchmark]
+    public string StringBuilderJoinEnumerable() => new StringBuilder().Append("[").AppendJoin(",", data.AsEnumerable()).Append("]").ToString();
+
+    [Benchmark]
+    public string MyStringBuilderJoinEnumerable() => StringBuilderExtensions.AppendJoin(new StringBuilder().Append("["), ",", data.AsEnumerable()).Append("]").ToString();
 }
 
 internal static class StringBuilderExtensions
@@ -36,8 +42,6 @@ internal static class StringBuilderExtensions
     {
         if (values.Length > 0)
         {
-            sb.EnsureCapacity(sb.Capacity + separator.Length * values.Length);
-
             sb.Append(values[0]);
 
             for (var i = 1; i < values.Length; i++)
@@ -53,8 +57,6 @@ internal static class StringBuilderExtensions
     {
         if (values.Length > 0)
         {
-            sb.EnsureCapacity(sb.Capacity + separator.Length * (values.Length - 1));
-
             sb.Append(values[0]);
 
             for (var i = 1; i < values.Length; i++)
